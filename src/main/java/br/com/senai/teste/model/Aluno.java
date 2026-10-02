@@ -31,7 +31,7 @@ public class Aluno {
         return id;
     }
 
-    public String getNome(String nome){
+    public String getNome(){
         return nome;
     }
 

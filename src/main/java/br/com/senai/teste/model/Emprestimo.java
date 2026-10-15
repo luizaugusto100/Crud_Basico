@@ -20,6 +20,8 @@ public class Emprestimo {
 
     private LocalDate dataEmprestimo;
 
+    private LocalDate dataDevolucao;
+
     @ManyToOne 
     @JoinColumn (name = "aluno_id", nullable = false)
     private Aluno aluno;
@@ -59,5 +61,11 @@ public class Emprestimo {
         this.livro = livro;
     }
 
-    // Getters and setters
+    public LocalDate getDataDevolucao() {
+        return dataDevolucao;
+    }
+
+    public void setDataDevolucao(LocalDate dataDevolucao) {
+        this.dataDevolucao = dataDevolucao;
+    }
 }

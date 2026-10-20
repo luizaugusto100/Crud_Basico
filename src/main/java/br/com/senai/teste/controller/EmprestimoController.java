@@ -1,5 +1,6 @@
 package br.com.senai.teste.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.senai.teste.dto.EmprestimoRequest;
 import br.com.senai.teste.model.Emprestimo;
 import br.com.senai.teste.service.EmprestimoService;
+import jakarta.validation.Valid;
 
 @RestController 
 @RequestMapping ("/emprestimos")
@@ -27,18 +29,15 @@ public class EmprestimoController {
         this.emprestimoService = emprestimoService;
     }
 
-    @PostMapping
+    @PostMapping 
     public ResponseEntity<Emprestimo> cadastrar(
-        @RequestBody EmprestimoRequest dados) {
-
+        @Valid @RequestBody EmprestimoRequest dados) {
+            
         Integer alunoId = dados.getAlunoId();
         Integer livroId = dados.getLivroId();
+        LocalDate dataPrevistaDevolucao = dados.getDataPrevistaDevolucao();
 
-        if (alunoId == null || livroId == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        Optional<Emprestimo> emprestimo = emprestimoService.cadastrar(alunoId, livroId);
+        Optional<Emprestimo> emprestimo = emprestimoService.cadastrar(alunoId, livroId, dataPrevistaDevolucao);
         if (emprestimo.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -80,4 +79,23 @@ public class EmprestimoController {
         
         return ResponseEntity.ok(emprestimos);
     }
+
+    @GetMapping ("/aluno/{alunoId}")
+    public ResponseEntity<List<Emprestimo>> listarPorAluno(
+        @PathVariable Integer alunoId) {
+
+        List<Emprestimo> emprestimos = emprestimoService.listarPorAluno(alunoId);
+        
+        return ResponseEntity.ok(emprestimos);
+    }
+
+    @GetMapping ("/atrasados")
+    public ResponseEntity<List<Emprestimo>> listarAtrasados() {
+
+        List<Emprestimo> emprestimos = emprestimoService.ListarAtrasados();
+        
+        return ResponseEntity.ok(emprestimos);
+    }
+
+    
 }

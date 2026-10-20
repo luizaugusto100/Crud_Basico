@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import br.com.senai.teste.model.Aluno;
 import br.com.senai.teste.model.Emprestimo;
@@ -31,18 +33,25 @@ public class EmprestimoService {
     }
 
     public Optional<Emprestimo> cadastrar(
-        Integer alunoId, Integer livroId) {
+        Integer alunoId, Integer livroId, LocalDate dataPrevistaDevolucao) {
             Optional<Aluno> aluno = alunoRepository.findById(alunoId);
             Optional<Livro> livro = livroRepository.findById(livroId);
             
             if (aluno.isEmpty() || livro.isEmpty()) {
                 return Optional.empty();
             }
+            boolean livroEmprestado = emprestimoRepository
+                .existsByLivroIdAndDataDevolucaoIsNull(livroId);
+            if (livroEmprestado) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Livro já emprestado");
+
+            }
             Emprestimo emprestimo = new Emprestimo();
             emprestimo.setAluno(aluno.get());
             emprestimo.setLivro(livro.get());
             emprestimo.setDataEmprestimo(LocalDate.now());
-           
+            emprestimo.setDataPrevistaDevolucao(dataPrevistaDevolucao);
+
             return Optional.of(emprestimoRepository.save(emprestimo));
         }
             public List<Emprestimo> listar() {
@@ -67,7 +76,16 @@ public class EmprestimoService {
         return Optional.of(emprestimo);
     }
     public List<Emprestimo> listarAtivos() {
-        return emprestimoRepository.findDataDevolucaoIsNull();
+        return emprestimoRepository.findByDataDevolucaoIsNull();
+    }
+    
+    public List<Emprestimo> listarPorAluno(Integer alunoId) {
+        return emprestimoRepository.findByAlunoId(alunoId);
+
+    }
+    public List<Emprestimo> ListarAtrasados() {
+        return emprestimoRepository.findByDataPrevistaDevolucaoBeforeAndDataDevolucaoIsNull(LocalDate.now());
     }
 
 }
+
